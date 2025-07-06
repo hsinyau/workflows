@@ -1,13 +1,19 @@
 {
 	"scripts": {
-		"neodb:sync": "tsx scripts/neodb.ts"
+		"neodb:sync": "tsx scripts/neodb.ts",
+		"footprints": "tsx scripts/footprints.ts"
 	},
 	"dependencies": {
-		"dotenv": "^17.0.1"
+		"dotenv": "^17.0.1",
+		"xml2js": "^0.6.2",
+		"adm-zip": "^0.5.10",
+		"axios": "^1.6.0"
 	},
 	"devDependencies": {
 		"@types/dotenv": "^8.2.3",
 		"@types/node": "^24.0.10",
+		"@types/xml2js": "^0.4.14",
+		"@types/adm-zip": "^0.5.5",
 		"tsx": "^4.20.3"
 	}
 }

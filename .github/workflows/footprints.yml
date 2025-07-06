@@ -1,0 +1,60 @@
+name: Convert KMZ to GeoJSON
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sundays at midnight
+
+jobs:
+  convert-kmz:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Install dependencies
+      run: pnpm install
+      
+    - name: Convert KMZ to GeoJSON
+      env:
+        KMZ_URL: ${{ secrets.KMZ_URL }}
+      run: pnpm run footprints
+      
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Clone target repo
+      uses: actions/checkout@v4
+      with:
+        repository: hsinyau/static
+        path: static
+        token: ${{ secrets.GH_SECRET }}
+
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.changes == 'true'
+      run: |
+        cp -r ./footprints/* ./static/footprints/
+        cp -r ./footprints.kmz ./static/footprints/footprints.kmz
+        cd static
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add ./footprints
+        git commit -m "chore(data): update footprints data"
+        git push 
