@@ -1,7 +1,8 @@
 {
 	"scripts": {
 		"neodb:sync": "tsx scripts/neodb.ts",
-		"footprints": "tsx scripts/footprints.ts"
+		"footprints": "tsx scripts/footprints.ts",
+		"vsco": "tsx scripts/vsco.ts"
 	},
 	"dependencies": {
 		"dotenv": "^17.0.1",
