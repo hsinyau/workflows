@@ -58,6 +58,6 @@ jobs:
           cd static
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ./neodb
-          git commit -m "chore(data): update neodb data"
+          git add ./vsco
+          git commit -m "chore(data): update vsco data"
           git push
