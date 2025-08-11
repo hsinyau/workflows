@@ -2,19 +2,22 @@
 	"scripts": {
 		"neodb:sync": "tsx scripts/neodb.ts",
 		"footprints": "tsx scripts/footprints.ts",
-		"vsco": "tsx scripts/vsco.ts"
+		"vsco": "tsx scripts/vsco.ts",
+		"wakabox": "tsx scripts/wakabox.ts"
 	},
 	"dependencies": {
-		"dotenv": "^17.0.1",
-		"xml2js": "^0.6.2",
+		"@octokit/rest": "^22.0.0",
 		"adm-zip": "^0.5.10",
-		"axios": "^1.6.0"
+		"axios": "^1.6.0",
+		"dotenv": "^17.0.1",
+		"wakatime-client": "^2.7.0",
+		"xml2js": "^0.6.2"
 	},
 	"devDependencies": {
+		"@types/adm-zip": "^0.5.5",
 		"@types/dotenv": "^8.2.3",
 		"@types/node": "^24.0.10",
 		"@types/xml2js": "^0.4.14",
-		"@types/adm-zip": "^0.5.5",
 		"tsx": "^4.20.3"
 	}
 }
