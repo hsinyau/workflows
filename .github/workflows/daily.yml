@@ -1,4 +1,4 @@
-name: Sync NeoDB Data
+name: Sync WakaTime and Hitokoto
 
 on:
   schedule:
