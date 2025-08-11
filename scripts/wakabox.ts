@@ -4,10 +4,8 @@ import { Octokit } from '@octokit/rest'
 
 dotenv.config()
 
-const { WAKABOX_GIST_ID, GH_SECERT, WAKATIME_API_KEY } = process.env
-
-if (!WAKABOX_GIST_ID || !GH_SECERT || !WAKATIME_API_KEY) {
-  console.error('Missing required environment variables: WAKABOX_GIST_ID, GH_TOKEN, WAKATIME_API_KEY')
+if (!process.env.WAKABOX_GIST_ID || !process.env.GH_SECERT || !process.env.WAKATIME_API_KEY) {
+  console.error('Missing required environment variables: WAKABOX_GIST_ID, GH_SECERT, WAKATIME_API_KEY')
   process.exit(1)
 }
 
@@ -23,9 +21,9 @@ type WakaStats = {
   }
 }
 
-const wakatime = new WakaTimeClient(WAKATIME_API_KEY)
+const wakatime = new WakaTimeClient(process.env.WAKATIME_API_KEY!)
 
-const octokit = new Octokit({ auth: `token ${GH_SECERT}` })
+const octokit = new Octokit({ auth: `token ${process.env.GH_SECERT}` })
 
 async function main() {
   const stats: WakaStats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS })
@@ -43,7 +41,7 @@ async function updateGist(stats: WakaStats) {
     | Awaited<ReturnType<typeof octokit.gists.get>>
     | undefined;
   try {
-    gist = await octokit.gists.get({ gist_id: WAKABOX_GIST_ID! });
+    gist = await octokit.gists.get({ gist_id: process.env.WAKABOX_GIST_ID! });
   } catch (error) {
     console.error(`Unable to get gist\n${error}`);
   }
@@ -70,7 +68,7 @@ async function updateGist(stats: WakaStats) {
     const filename = gist && gist.data && gist.data.files ? Object.keys(gist.data.files)[0] : undefined
     if (!filename) return
     await octokit.gists.update({
-      gist_id: WAKABOX_GIST_ID!,
+      gist_id: process.env.WAKABOX_GIST_ID!,
       files: {
         [filename]: {
           filename: `📊 Weekly development breakdown`,

@@ -4,9 +4,7 @@ import { Octokit } from '@octokit/rest'
 
 dotenv.config()
 
-const { GH_SECERT, HITOKOTO_GIST_ID, CATEGORY } = process.env
-
-if (!GH_SECERT || !HITOKOTO_GIST_ID) {
+if (!process.env.GH_SECERT || !process.env.HITOKOTO_GIST_ID) {
   console.error('Missing required environment variables: GH_SECERT, HITOKOTO_GIST_ID')
   process.exit(1)
 }
@@ -20,7 +18,7 @@ interface HitokotoResponse {
   from_who: string
 }
 
-const octokit = new Octokit({ auth: `token ${GH_SECERT}` })
+const octokit = new Octokit({ auth: `token ${process.env.GH_SECERT}` })
 
 async function getHitokoto(categories: string[]): Promise<HitokotoResponse> {
   const queryParams = new URLSearchParams()
@@ -42,7 +40,7 @@ async function getHitokoto(categories: string[]): Promise<HitokotoResponse> {
 async function updateGist(hitokoto: HitokotoResponse): Promise<void> {
   try {
     // Get gist
-    const gist = await octokit.gists.get({ gist_id: HITOKOTO_GIST_ID! })
+    const gist = await octokit.gists.get({ gist_id: process.env.HITOKOTO_GIST_ID! })
     
     // Format timestamp
     const now = new Date().toLocaleString('en-US', {
@@ -74,7 +72,7 @@ async function updateGist(hitokoto: HitokotoResponse): Promise<void> {
     }
     
     await octokit.gists.update({
-      gist_id: HITOKOTO_GIST_ID!,
+      gist_id: process.env.HITOKOTO_GIST_ID!,
       files: {
         [filename]: {
           filename: '🌧Hitokoto',
@@ -92,7 +90,7 @@ async function updateGist(hitokoto: HitokotoResponse): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    const categories = CATEGORY ? CATEGORY.split('') : []
+    const categories = process.env.CATEGORY ? process.env.CATEGORY.split('') : []
     
     const hitokoto = await getHitokoto(categories)
     await updateGist(hitokoto)
