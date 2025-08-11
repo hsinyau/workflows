@@ -4,11 +4,6 @@ import { Octokit } from '@octokit/rest'
 
 dotenv.config()
 
-if (!process.env.WAKABOX_GIST_ID || !process.env.GH_SECERT || !process.env.WAKATIME_API_KEY) {
-  console.error('Missing required environment variables: WAKABOX_GIST_ID, GH_SECERT, WAKATIME_API_KEY')
-  process.exit(1)
-}
-
 type LanguageStat = {
   name: string
   percent: number

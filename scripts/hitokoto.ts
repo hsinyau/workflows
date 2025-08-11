@@ -4,11 +4,6 @@ import { Octokit } from '@octokit/rest'
 
 dotenv.config()
 
-if (!process.env.GH_SECERT || !process.env.HITOKOTO_GIST_ID) {
-  console.error('Missing required environment variables: GH_SECERT, HITOKOTO_GIST_ID')
-  process.exit(1)
-}
-
 const endpoint = 'https://v1.hitokoto.cn'
 
 // Response is response struct referring to https://developer.hitokoto.cn/sentence/#%E8%BF%94%E5%9B%9E%E6%A0%BC%E5%BC%8F
