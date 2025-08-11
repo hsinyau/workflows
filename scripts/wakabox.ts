@@ -29,7 +29,7 @@ const octokit = new Octokit({ auth: `token ${GH_SECERT}` })
 
 async function main() {
   const stats: WakaStats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS })
-  console.log(stats)
+  // console.log(stats)
   await updateGist(stats);
 }
 
@@ -98,6 +98,7 @@ function generateBarChart(percent, size) {
     .padEnd(size, syms.substring(0, 1));
 }
 
-(async () => {
-  await main();
-})();
+// Run the script
+if (require.main === module) {
+  main();
+}

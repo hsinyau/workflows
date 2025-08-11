@@ -3,7 +3,8 @@
 		"neodb:sync": "tsx scripts/neodb.ts",
 		"footprints": "tsx scripts/footprints.ts",
 		"vsco": "tsx scripts/vsco.ts",
-		"wakabox": "tsx scripts/wakabox.ts"
+		"wakabox": "tsx scripts/wakabox.ts",
+		"hitokoto": "tsx scripts/hitokoto.ts"
 	},
 	"dependencies": {
 		"@octokit/rest": "^22.0.0",
