@@ -1,8 +1,6 @@
-import dotenv from 'dotenv'
+import 'dotenv/config'
 import axios from 'axios'
-import { Octokit } from '@octokit/rest'
-
-dotenv.config()
+import { octokit } from '../lib/octokit'
 
 const endpoint = 'https://v1.hitokoto.cn'
 
@@ -12,8 +10,6 @@ interface HitokotoResponse {
   from: string
   from_who: string
 }
-
-const octokit = new Octokit({ auth: `token ${process.env.GH_SECERT}` })
 
 async function getHitokoto(categories: string[]): Promise<HitokotoResponse> {
   const queryParams = new URLSearchParams()
@@ -73,6 +69,9 @@ async function updateGist(hitokoto: HitokotoResponse): Promise<void> {
           filename: '🌧Hitokoto',
           content: content
         }
+      },
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
       }
     })
     

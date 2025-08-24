@@ -1,8 +1,6 @@
-import dotenv from 'dotenv'
+import 'dotenv/config'
 import { WakaTimeClient, RANGE } from 'wakatime-client'
-import { Octokit } from '@octokit/rest'
-
-dotenv.config()
+import { octokit } from '../lib/octokit'
 
 type LanguageStat = {
   name: string
@@ -17,8 +15,6 @@ type WakaStats = {
 }
 
 const wakatime = new WakaTimeClient(process.env.WAKATIME_API_KEY!)
-
-const octokit = new Octokit({ auth: `token ${process.env.GH_SECERT}` })
 
 async function main() {
   const stats: WakaStats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS })
@@ -36,7 +32,12 @@ async function updateGist(stats: WakaStats) {
     | Awaited<ReturnType<typeof octokit.gists.get>>
     | undefined;
   try {
-    gist = await octokit.gists.get({ gist_id: process.env.WAKABOX_GIST_ID! });
+    gist = await octokit.request('GET /gists/{gist_id}', {
+      gist_id: process.env.WAKABOX_GIST_ID!,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    })
   } catch (error) {
     console.error(`Unable to get gist\n${error}`);
   }
@@ -62,15 +63,18 @@ async function updateGist(stats: WakaStats) {
     // Get original filename to update that same file
     const filename = gist && gist.data && gist.data.files ? Object.keys(gist.data.files)[0] : undefined
     if (!filename) return
-    await octokit.gists.update({
+    await octokit.request('PATCH /gists/{gist_id}', {
       gist_id: process.env.WAKABOX_GIST_ID!,
       files: {
         [filename]: {
           filename: `📊 Weekly development breakdown`,
           content: lines.join("\n")
         }
+      },
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
       }
-    });
+    })
   } catch (error) {
     console.error(`Unable to update gist\n${error}`);
   }
