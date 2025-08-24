@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  daily:
+  wakahito:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,13 +28,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Sync WakaTime and Hitokoto
+      - name: Sync WakaTime
         env:
           GH_SECERT: ${{ secrets.GH_SECERT }}
           WAKABOX_GIST_ID: ${{ secrets.WAKABOX_GIST_ID }}
           WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-          HITOKOTO_GIST_ID: ${{ secrets.HITOKOTO_GIST_ID }}
-          CATEGORY: ${{ secrets.CATEGORY }}
         run: |
           pnpm run wakabox
+
+      - name: Sync Hitokoto
+        env:
+          HITOKOTO_GIST_ID: ${{ secrets.HITOKOTO_GIST_ID }}
+          GH_SECERT: ${{ secrets.GH_SECERT }}
+        run: |
           pnpm run hitokoto
