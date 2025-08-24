@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
 
 export const octokit = new Octokit({
-  auth: process.env.GH_SECERT!,
+  auth: process.env.GH_SECRET!,
 });
