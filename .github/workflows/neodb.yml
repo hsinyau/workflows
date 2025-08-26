@@ -58,5 +58,5 @@ jobs:
           git config --local user.email "hsinyau@qq.com"
           git config --local user.name "hsinyau"
           git add ./neodb
-          git commit -m "chore(data): update neodb data"
+          git commit -m "action(data): auto update neodb data"
           git push
