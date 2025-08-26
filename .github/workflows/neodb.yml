@@ -55,8 +55,8 @@ jobs:
         run: |
           cp -r ./neodb/* ./static/neodb/
           cd static
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "hsinyau@qq.com"
+          git config --local user.name "hsinyau"
           git add ./neodb
           git commit -m "chore(data): update neodb data"
           git push
