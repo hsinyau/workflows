@@ -53,8 +53,8 @@ jobs:
         cp -r ./footprints/* ./static/footprints/
         cp -r ./footprints.kmz ./static/footprints/footprints.kmz
         cd static
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "hsinyau@qq.com"
+        git config --local user.name "hsinyau"
         git add ./footprints
-        git commit -m "chore(data): update footprints data"
+        git commit -m "action(data): auto update footprints data"
         git push 
