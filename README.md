@@ -1,4 +1,4 @@
-# actions
+# workflows
 
 - [Sync NeoDB Data](./.github/workflows/neodb.yml)
 - [Sync Footprints Data](./.github/workflows/footprints.yml)
