@@ -59,3 +59,4 @@ jobs:
           git config --local user.name "hsinyau"
           git add ./instagram
           git commit -m "action(data): auto update instagram data"
+          git push
