@@ -10,6 +10,7 @@ const ROOT_DIR = process.cwd();
 const INSTAGRAM_DIR = path.join(ROOT_DIR, 'instagram');
 const PHOTOS_DIR = path.join(INSTAGRAM_DIR, 'photos');
 const JSON_FILE_PATH = path.join(INSTAGRAM_DIR, 'instagram.json');
+const IMAGES_JSON_FILE_PATH = path.join(INSTAGRAM_DIR, 'images.json');
 
 // 确保目录结构存在
 if (!fs.existsSync(INSTAGRAM_DIR)) {
@@ -208,6 +209,64 @@ const saveInstagramData = async (data: any) => {
   }
 };
 
+// 生成图片JSON文件，根据文件名去重，按时间戳排序
+const generateImagesJson = async (simplifiedData: any[]) => {
+  try {
+    const imagesMap = new Map(); // 用于去重，key为文件名
+    
+    // 遍历所有数据，收集图片信息
+    for (const item of simplifiedData) {
+      const timestamp = new Date(item.timestamp).getTime();
+      
+      // 处理主图片
+      if (item.image && item.image.url) {
+        const filename = getOriginalFilenameFromUrl(item.image.url);
+        if (!imagesMap.has(filename) || imagesMap.get(filename).timestamp < timestamp) {
+          imagesMap.set(filename, {
+            src: filename,
+            width: item.image.width.toString(),
+            height: item.image.height.toString(),
+            alt: item.text,
+            date: item.timestamp
+          });
+        }
+      }
+      
+      // 处理轮播图
+      if (item.carousel_media && item.carousel_media.length > 0) {
+        for (const media of item.carousel_media) {
+          if (media && media.url) {
+            const filename = getOriginalFilenameFromUrl(media.url);
+            if (!imagesMap.has(filename) || imagesMap.get(filename).timestamp < timestamp) {
+              imagesMap.set(filename, {
+                src: filename,
+                width: media.width.toString(),
+                height: media.height.toString(),
+                alt: item.text,
+                date: item.timestamp
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    // 转换为数组并按时间戳排序（新的在前）
+    const imagesArray = Array.from(imagesMap.values()).sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+    
+    // 保存到JSON文件
+    fs.writeFileSync(IMAGES_JSON_FILE_PATH, JSON.stringify(imagesArray, null, 2));
+    console.log(`图片JSON文件已保存到 ${IMAGES_JSON_FILE_PATH}，共${imagesArray.length}张图片`);
+    
+    return imagesArray;
+  } catch (error) {
+    console.error('生成图片JSON文件失败:', error.message);
+    throw error;
+  }
+};
+
 async function main() {
   try {
     await setCookies();
@@ -230,6 +289,9 @@ async function main() {
     
     // 保存精简版数据到JSON文件
     const simplifiedData = await saveInstagramData(feedItems);
+    
+    // 生成图片JSON文件
+    await generateImagesJson(simplifiedData);
     
     // 下载照片到photos目录
     const photos: any = [];
