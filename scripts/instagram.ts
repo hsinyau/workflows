@@ -109,7 +109,7 @@ const getUserFeedItems = async (username: string) => {
 // 从URL中提取原始文件名
 const getOriginalFilenameFromUrl = (url: string): string => {
   // 提取形如 443711036_417575674565247_1156670569594802102_n.webp 的文件名
-  const match = url.match(/\/([^\/]+_[^\/]+_[^\/]+_[^\/]+\.(webp|jpg|jpeg|png))/);
+  const match = url.match(/\/([^\/]+_[^\/]+_[^\/]+_[^\/]+\.(webp|jpg|jpeg|png|heic|avif))/);
   if (match && match[1]) {
     return match[1];
   }
