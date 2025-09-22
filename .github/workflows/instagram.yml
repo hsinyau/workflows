@@ -84,7 +84,7 @@ jobs:
           cd static
           git config --local user.email "hsinyau@qq.com"
           git config --local user.name "hsinyau"
-          git add .data/instagram/
+          git add ./instagram/
           git commit -m "action(data): auto update instagram data"
           git push
   
