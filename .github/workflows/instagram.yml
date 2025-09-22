@@ -2,10 +2,10 @@ name: Sync Instagram Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 6 * * *'
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史记录，支持增量下载
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,15 +35,38 @@ jobs:
         env:
           INSTAGRAM_COOKIES: ${{ secrets.INSTAGRAM_COOKIES }}
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+
+      - name: Display download statistics
+        run: |
+          echo "=== Instagram Data Sync Statistics ==="
+          if [ -d ".data/instagram/photos" ]; then
+            echo "Total photos in directory: $(ls -1 .data/instagram/photos | wc -l)"
+            echo "Latest photos:"
+            ls -lt .data/instagram/photos | head -5
+          else
+            echo "No photos directory found"
+          fi
           
       - name: Check for changes
         id: check_changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changed files:"
+            git status --porcelain
           else
             echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
           fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "hsinyau@qq.com"
+          git config --local user.name "hsinyau"
+          git add .data/instagram/
+          git commit -m "action(data): auto update instagram data [skip ci]"
+          git push
 
       - name: Clone target repo
         uses: actions/checkout@v4
@@ -53,10 +78,11 @@ jobs:
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          cp -r ./instagram/* ./static/instagram/
+          cp -r .data/instagram/* ./static/instagram/
           cd static
           git config --local user.email "hsinyau@qq.com"
           git config --local user.name "hsinyau"
-          git add ./instagram
+          git add .data/instagram/
           git commit -m "action(data): auto update instagram data"
           git push
+  

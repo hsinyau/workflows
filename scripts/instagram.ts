@@ -7,7 +7,7 @@ import fs from 'fs';
 const baseUrl = 'https://www.instagram.com';
 const COOKIE_URL = baseUrl;
 const ROOT_DIR = process.cwd();
-const INSTAGRAM_DIR = path.join(ROOT_DIR, 'instagram');
+const INSTAGRAM_DIR = path.join(ROOT_DIR, '.data/instagram');
 const PHOTOS_DIR = path.join(INSTAGRAM_DIR, 'photos');
 const JSON_FILE_PATH = path.join(INSTAGRAM_DIR, 'instagram.json');
 const IMAGES_JSON_FILE_PATH = path.join(INSTAGRAM_DIR, 'images.json');
@@ -88,11 +88,11 @@ const getUserInfo = async (username: string) => {
   }
 };
 
-const getUserFeedItems = async (username: string) => {
+const getUserFeedItems = async (username: string, count: number = 12) => {
   try {
     const response = await axios.get(`${baseUrl}/api/v1/feed/user/${username}/username/`, {
       headers: await getHeaders(),
-      params: { count: 30 },
+      params: { count },
     });
 
     if (response.request.res.responseUrl?.includes('/accounts/login/')) {
@@ -120,15 +120,28 @@ const getOriginalFilenameFromUrl = (url: string): string => {
   return randomName;
 };
 
+// 检查图片是否已存在
+const checkImageExists = (filename: string): boolean => {
+  const filePath = path.join(PHOTOS_DIR, filename);
+  return fs.existsSync(filePath);
+};
+
 const downloadImage = async (url: string, customFilename?: string) => {
+  // 使用原始文件名或自定义文件名
+  const filename = customFilename || getOriginalFilenameFromUrl(url);
+  
+  // 检查图片是否已存在
+  if (checkImageExists(filename)) {
+    console.log(`图片已存在，跳过下载: ${filename}`);
+    return filename;
+  }
+  
   const response = await axios({
     url,
     method: 'GET',
     responseType: 'stream',
   });
   
-  // 使用原始文件名或自定义文件名
-  const filename = customFilename || getOriginalFilenameFromUrl(url);
   const filePath = path.join(PHOTOS_DIR, filename);
   
   const writer = fs.createWriteStream(filePath);
@@ -284,7 +297,8 @@ async function main() {
     const userInfo = await getUserInfo(username);
     console.log(`成功获取用户信息: ${userInfo.username}`);
     
-    const feedItems = await getUserFeedItems(username);
+    // 只获取最新的12条帖子，减少处理时间
+    const feedItems = await getUserFeedItems(username, 12);
     console.log(`获取到${feedItems.length}条Instagram帖子`);
     
     // 保存精简版数据到JSON文件
@@ -295,6 +309,8 @@ async function main() {
     
     // 下载照片到photos目录
     const photos: any = [];
+    let downloadedCount = 0;
+    let skippedCount = 0;
     
     // 处理所有帖子
     for (let i = 0; i < simplifiedData.length; i++) {
@@ -303,7 +319,12 @@ async function main() {
       // 处理单张图片
       if (item.image && item.image.url) {
         const filename = await downloadImage(item.image.url);
-        console.log(`已下载照片: ${filename}`);
+        if (checkImageExists(filename)) {
+          skippedCount++;
+        } else {
+          downloadedCount++;
+          console.log(`已下载照片: ${filename}`);
+        }
         photos.push({
           url: `instagram/photos/${filename}`,
           timestamp: item.timestamp,
@@ -317,7 +338,12 @@ async function main() {
           const media = item.carousel_media[j];
           if (media && media.url) {
             const filename = await downloadImage(media.url);
-            console.log(`已下载轮播图照片: ${filename}`);
+            if (checkImageExists(filename)) {
+              skippedCount++;
+            } else {
+              downloadedCount++;
+              console.log(`已下载轮播图照片: ${filename}`);
+            }
             
             // 只将第一张轮播图添加到README中
             if (j === 0) {
@@ -336,6 +362,8 @@ async function main() {
         break;
       }
     }
+    
+    console.log(`图片下载统计: 新下载 ${downloadedCount} 张，跳过 ${skippedCount} 张已存在的图片`);
     
     console.log('Instagram数据同步完成');
   } catch (error) {
