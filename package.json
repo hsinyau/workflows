@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"neodb:sync": "tsx scripts/neodb.ts",
+		"neodb": "tsx scripts/neodb.ts",
 		"footprints": "tsx scripts/footprints.ts",
 		"wakabox": "tsx scripts/wakabox.ts",
 		"hitokoto": "tsx scripts/hitokoto.ts",

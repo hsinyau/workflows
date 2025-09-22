@@ -85,7 +85,7 @@ async function getInitialData(): Promise<CategoryData> {
 // Get current count from local file
 async function getCurrentCount(): Promise<number> {
   try {
-    const neodbPath = path.join(process.cwd(), 'neodb', 'neodb.json')
+    const neodbPath = path.join(process.cwd(), '.data/neodb', 'neodb.json')
     const data = await fs.readFile(neodbPath, 'utf-8')
     const json = JSON.parse(data)
     return json.data?.length || 0
@@ -165,11 +165,22 @@ function extractCategoryData(mergedData: CleanNeoDBData, category: string): NeoD
     }))
 }
 
-// Download cover images
+// Check if cover image exists
+async function checkCoverImageExists(filename: string, coverDir: string): Promise<boolean> {
+  const filepath = path.join(coverDir, filename)
+  try {
+    await fs.access(filepath)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Download cover images with incremental support
 async function downloadCoverImages(mergedData: CleanNeoDBData): Promise<void> {
-  console.log('Downloading cover images...')
+  console.log('Starting cover images download...')
   
-  const coverDir = path.join(process.cwd(), 'neodb', 'cover')
+  const coverDir = path.join(process.cwd(), '.data/neodb', 'cover')
   
   // Create cover directory if it doesn't exist
   try {
@@ -178,40 +189,64 @@ async function downloadCoverImages(mergedData: CleanNeoDBData): Promise<void> {
     // Directory might already exist
   }
 
-  const imageUrls = mergedData.data
-    .map(item => item.cover_image_url)
-    .filter(url => url && url.trim() !== '')
+  // Get unique image URLs with metadata
+  const imageData = mergedData.data
+    .map(item => ({
+      url: item.cover_image_url,
+      title: item.title,
+      created_time: item.created_time
+    }))
+    .filter(item => item.url && item.url.trim() !== '')
+    .sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime()) // 最新的在前
 
-  console.log(`Found ${imageUrls.length} cover images to download`)
+  console.log(`Found ${imageData.length} cover images to process`)
 
-  for (const url of imageUrls) {
+  let downloadedCount = 0
+  let skippedCount = 0
+  let failedCount = 0
+
+  // 只处理最新的图片，限制数量以提高效率
+  const maxImagesToProcess = Math.min(imageData.length, 50) // 最多处理50张图片
+  const imagesToProcess = imageData.slice(0, maxImagesToProcess)
+
+  console.log(`Processing latest ${imagesToProcess.length} images (limited to ${maxImagesToProcess})`)
+
+  for (const imageItem of imagesToProcess) {
     try {
-      const filename = path.basename(url)
-      const filepath = path.join(coverDir, filename)
-
+      const filename = path.basename(imageItem.url)
+      
       // Check if file already exists
-      try {
-        await fs.access(filepath)
+      if (await checkCoverImageExists(filename, coverDir)) {
         console.log(`Skipping ${filename} - File already exists`)
+        skippedCount++
         continue
-      } catch {
-        // File doesn't exist, proceed to download
       }
 
       // Download the image
-      const response = await fetch(url)
+      const response = await fetch(imageItem.url)
       if (!response.ok) {
         console.log(`Failed to download ${filename}: ${response.statusText}`)
+        failedCount++
         continue
       }
 
+      const filepath = path.join(coverDir, filename)
       const buffer = await response.arrayBuffer()
       await fs.writeFile(filepath, Buffer.from(buffer))
-      console.log(`Downloaded ${filename}`)
+      console.log(`Downloaded ${filename} (${imageItem.title})`)
+      downloadedCount++
     } catch (error) {
-      console.log(`Error downloading image from ${url}:`, error)
+      console.log(`Error downloading image from ${imageItem.url}:`, error)
+      failedCount++
     }
   }
+
+  console.log(`Cover images download completed:`)
+  console.log(`  - New downloads: ${downloadedCount}`)
+  console.log(`  - Skipped (already exists): ${skippedCount}`)
+  console.log(`  - Failed: ${failedCount}`)
+  console.log(`  - Total processed: ${imagesToProcess.length}`)
+  console.log(`  - Total available: ${imageData.length}`)
 }
 
 // Git operations - removed as they will be handled by GitHub Actions
@@ -241,7 +276,7 @@ export async function syncNeoDBData(): Promise<void> {
     console.log('Counts are different. Proceeding with data update...')
 
     // Create neodb directory if it doesn't exist
-    const neodbDir = path.join(process.cwd(), 'neodb')
+    const neodbDir = path.join(process.cwd(), '.data/neodb')
     try {
       await fs.mkdir(neodbDir, { recursive: true })
     } catch (error) {
