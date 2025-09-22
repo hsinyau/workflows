@@ -62,8 +62,8 @@ jobs:
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          git config --local user.email "hsinyau@qq.com"
-          git config --local user.name "hsinyau"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add .data/instagram/
           git commit -m "action(data): auto update instagram data [skip ci]"
           git push
