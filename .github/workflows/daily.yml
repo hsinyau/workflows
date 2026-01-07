@@ -34,6 +34,10 @@ jobs:
           WAKABOX_GIST_ID: ${{ secrets.WAKABOX_GIST_ID }}
           WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
           HITOKOTO_GIST_ID: ${{ secrets.HITOKOTO_GIST_ID }}
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_USERNAME: ${{ secrets.LASTFM_USERNAME }}
+          LASTFM_GIST_ID: ${{ secrets.LASTFM_GIST_ID }}
         run: |
           pnpm run wakabox
           pnpm run hitokoto
+          pnpm run lastfm

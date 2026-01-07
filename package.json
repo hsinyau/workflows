@@ -4,7 +4,8 @@
 		"footprints": "tsx scripts/footprints.ts",
 		"wakabox": "tsx scripts/wakabox.ts",
 		"hitokoto": "tsx scripts/hitokoto.ts",
-		"instagram": "tsx scripts/instagram.ts"
+		"instagram": "tsx scripts/instagram.ts",
+		"lastfm": "tsx scripts/lastfm.ts"
 	},
 	"dependencies": {
 		"@octokit/rest": "^22.0.0",
